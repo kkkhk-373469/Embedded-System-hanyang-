@@ -1,3 +1,5 @@
+# 파라미터 수정 필요(start duration, right, left)
+
 from base_ctrl import BaseController
 from jetcam.csi_camera import CSICamera
 
