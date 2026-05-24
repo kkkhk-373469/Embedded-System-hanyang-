@@ -1359,7 +1359,7 @@ try:
 
                 if (
 
-                    38.0 < elapsed_stage_time < 46.0
+                    36.0 < elapsed_stage_time < 44.0
 
                     and
 
