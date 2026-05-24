@@ -84,6 +84,8 @@ left2_model = load_model(
 # =====================================
 yolo_model = YOLO('best_real.pt')
 circle_model = YOLO('best_circle.pt')
+sinho_model = YOLO('best_sinho.pt')
+
 
 # 접근 차량 Rover 탐지 모델
 rover_model = YOLO('rover.pt')
@@ -728,13 +730,6 @@ def detect_sign(frame):
                 detected = "RIGHT"
 
             # =================================
-            # SINHO
-            # =================================
-            elif (label == "Sinho" and box_height >= SIGN_CONFIG["SINHO"]["min_width"] and conf >= SIGN_CONFIG["SINHO"]["conf"]):
-
-                detected = "SINHO"
-
-            # =================================
             # SLOW
             # =================================
             elif (label == "Slow" and box_width >= SIGN_CONFIG["SLOW"]["min_width"] and conf >= SIGN_CONFIG["SLOW"]["conf"]):
@@ -747,6 +742,23 @@ def detect_sign(frame):
             elif (label == "Stop" and box_width >= SIGN_CONFIG["STOP"]["min_width"] and conf >= SIGN_CONFIG["STOP"]["conf"]):
 
                 detected = "STOP"
+    # =================================
+    # 신호 전용 탐지 처리 🟢 추가
+    # =================================
+    for r in sinho_results:
+        boxes = r.boxes
+        for box in boxes:
+            cls_id = int(box.cls[0])
+            label = sinho_model.names[cls_id]
+            conf = float(box.conf[0])
+            
+            x1, y1, x2, y2 = box.xyxy[0]
+            box_height = y2 - y1  # 기존 코드와 동일하게 높이 기준 적용
+            
+            # 신호 모델에 학습된 클래스명이 "Sinho"인지 확인 필요
+            if label == "Sinho" and box_height >= SIGN_CONFIG["SINHO"]["min_width"] and conf >= SIGN_CONFIG["SINHO"]["conf"]:
+                detected = "SINHO"
+    
 
 
     return detected
