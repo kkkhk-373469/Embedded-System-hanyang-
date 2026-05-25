@@ -1372,6 +1372,10 @@ try:
             or
 
             drive_mode == "NORMAL_RIGHT"
+
+            or
+
+            drive_mode == "SECOND_NORMAL_RIGHT"
         ):
 
             # =================================
