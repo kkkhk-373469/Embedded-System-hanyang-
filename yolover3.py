@@ -531,14 +531,14 @@ SIGN_CONFIG = {
 
     "LEFT": {
 
-        "conf": 0.6,
+        "conf": 0.5,
 
-        "min_width": 20
+        "min_width": 15
     },
 
     "RIGHT": {
 
-        "conf": 0.2
+        "conf": 0.5
         ,
 
         "min_width": 15
@@ -546,9 +546,9 @@ SIGN_CONFIG = {
 
     "SINHO": {
 
-        "conf": 0.20,
+        "conf": 0.30,
 
-        "min_width": 80
+        "min_width": 100
     },
 
     "SLOW": {
@@ -705,7 +705,6 @@ def update_vehicle_motion(
 # YOLO 표지판 인식
 # =====================================
 def detect_sign(frame):
-
     # =================================
     # LEFT / RIGHT 전용
     # =================================
@@ -720,47 +719,14 @@ def detect_sign(frame):
         source=frame,
         verbose=False
     )
-
-    detected = None
-
+    # =================================
+    # SINHO 전용
+    # =================================
     sinho_results = sinho_model.predict(
-    source=frame,
-    verbose=False)
-
-    for r in results:
-
-        boxes = r.boxes
-
-        for box in boxes:
-
-            cls_id = int(box.cls[0])
-
-            label = yolo_model.names[cls_id]
-
-            conf = float(box.conf[0])
-
-            # =================================
-            # 박스 크기
-            # =================================
-            x1, y1, x2, y2 = box.xyxy[0]
-
-            box_width = x2 - x1
-            box_height = y2 - y1
-
-            # =================================
-            # SLOW
-            # =================================
-            if (label == "Slow" and box_width >= SIGN_CONFIG["SLOW"]["min_width"] and conf >= SIGN_CONFIG["SLOW"]["conf"]):
-
-                detected = "SLOW"
-
-            # =================================
-            # STOP
-            # =================================
-            elif (label == "Stop" and box_width >= SIGN_CONFIG["STOP"]["min_width"] and conf >= SIGN_CONFIG["STOP"]["conf"]):
-
-                detected = "STOP"
-
+        source=frame,
+        verbose=False)
+    
+    detected = None
     # =================================
     # LEFT / RIGHT 탐지
     # =================================
@@ -791,7 +757,7 @@ def detect_sign(frame):
                 conf >= SIGN_CONFIG["LEFT"]["conf"]
             ):
     
-                detected = "LEFT"
+                return "LEFT"
     
             # =============================
             # RIGHT
@@ -804,9 +770,45 @@ def detect_sign(frame):
                 conf >= SIGN_CONFIG["RIGHT"]["conf"]
             ):
     
-                detected = "RIGHT"
+                return "RIGHT"
     # =================================
-    # 신호 탐지 처리 
+    # STOP / SLOW 탐지
+    # =================================
+    for r in results:
+
+        boxes = r.boxes
+
+        for box in boxes:
+
+            cls_id = int(box.cls[0])
+
+            label = yolo_model.names[cls_id]
+
+            conf = float(box.conf[0])
+
+            # =================================
+            # 박스 크기
+            # =================================
+            x1, y1, x2, y2 = box.xyxy[0]
+
+            box_width = x2 - x1
+            box_height = y2 - y1
+
+            # =================================
+            # SLOW
+            # =================================
+            if (label == "Slow" and box_width >= SIGN_CONFIG["SLOW"]["min_width"] and conf >= SIGN_CONFIG["SLOW"]["conf"]):
+
+                return "SLOW"
+
+            # =================================
+            # STOP
+            # =================================
+            elif (label == "Stop" and box_width >= SIGN_CONFIG["STOP"]["min_width"] and conf >= SIGN_CONFIG["STOP"]["conf"]):
+
+                return "STOP"
+    # =================================
+    # SINHO 탐지 
     # =================================
     for r in sinho_results:
         boxes = r.boxes
@@ -820,7 +822,7 @@ def detect_sign(frame):
             
             # 신호 모델에 학습된 클래스명이 "Sinho"인지 확인 필요
             if label == "Sinho" and box_height >= SIGN_CONFIG["SINHO"]["min_width"] and conf >= SIGN_CONFIG["SINHO"]["conf"]:
-                detected = "SINHO"
+                return "SINHO"
 
     return detected
 
