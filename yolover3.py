@@ -59,12 +59,6 @@ right_model = load_model(
 right2_model = load_model(
     'road_right.pth'
 )
-# rotation_only_2.pth(AlexNet 회귀 모델)는 더 이상 사용하지 않음.
-# rotation.pt는 ROTATION_ONLY / SECOND_ROTATION_ONLY 구간의 YOLO Segmentation 모델로 사용한다.
-# 주의: rotation.pt는 회전 구간의 주행 가능 영역(mask)을 학습한 segmentation 모델이어야 한다.
-rotation_only_model = load_model(
-    'rotation_only_2.pth'
-)
 # =====================================
 # YOLO Segmentation 모델
 # =====================================
@@ -73,6 +67,9 @@ normal_left_seg_model = YOLO(
 )
 normal_right_seg_model = YOLO(
     'right.pt'
+)
+rotation_seg_model = YOLO(
+    'rotation11.pt'
 )
 # =====================================
 # YOLO
@@ -131,9 +128,11 @@ ROVER_AWAY_CONFIRM_FRAMES = 3
 # Segmentation 사용할 모드
 # =====================================
 SEGMENTATION_MODES = {
-    "START_LEFT",            # 시작부터 left.pt segmentation으로 조향
+    "START_LEFT",           
     "NORMAL_LEFT",
-    "NORMAL_RIGHT"
+    "NORMAL_RIGHT",
+    "ROTATION_ONLY",
+    "SECOND_ROTATION_ONLY"
 }
 # =====================================
 # STAGE PARAMS
@@ -304,7 +303,7 @@ STAGE_PARAMS = {
     # =================================
     "ROTATION_ONLY": {
 
-        "model": rotation_only_model,
+        "model": rotation_seg_model,
 
         "speed": 0.18,
 
@@ -464,7 +463,7 @@ STAGE_PARAMS = {
     # =================================
     "SECOND_ROTATION_ONLY": {
 
-        "model": rotation_only_model,
+        "model": rotation_seg_model,
 
         "speed": 0.18,
 
